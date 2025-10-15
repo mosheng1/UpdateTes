@@ -1,26 +1,24 @@
-# Node.js
-node_modules/
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+pnpm-debug.log*
+lerna-debug.log*
 
-# Rust/Tauri
-target/
-Cargo.lock
+node_modules
+dist
+dist-ssr
+*.local
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-
-# Build outputs
-dist/
-build/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
