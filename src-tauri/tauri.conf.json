@@ -107,6 +107,7 @@
       "msi",
       "nsis"
     ],
+    "createUpdaterArtifacts": true,
     "publisher": "MoSheng",
     "homepage": "https://github.com/mosheng1/QuickClipboard",
     "copyright": "Copyright © 2025 MoSheng. All rights reserved.",
