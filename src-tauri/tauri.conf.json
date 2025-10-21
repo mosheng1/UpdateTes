@@ -89,7 +89,8 @@
         "screenshot",
         "pin-image",
         "input-dialog",
-        "context-menu"
+        "context-menu",
+        "updater"
       ],
       "assetProtocol": {
         "enable": true,
@@ -104,10 +105,8 @@
   "bundle": {
     "active": true,
     "targets": [
-      "msi",
       "nsis"
     ],
-    "createUpdaterArtifacts": true,
     "publisher": "MoSheng",
     "homepage": "https://github.com/mosheng1/QuickClipboard",
     "copyright": "Copyright © 2025 MoSheng. All rights reserved.",
@@ -125,7 +124,7 @@
     "windows": {
       "nsis": {
         "installerIcon": "icons/icon.ico",
-        "installMode": "perMachine",
+        "installMode": "currentUser",
         "languages": [
           "SimpChinese"
         ],
@@ -134,7 +133,8 @@
       "wix": {
         "language": "zh-CN"
       }
-    }
+    },
+    "createUpdaterArtifacts": true
   },
   "plugins": {
     "updater": {

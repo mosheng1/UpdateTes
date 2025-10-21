@@ -32,6 +32,9 @@ import { detectColor, generateColorPreviewHTML } from './utils/colorUtils.js';
 // 虚拟列表实例
 let quickTextsVirtualList = null;
 
+// 图片文件扩展名常量
+const IMAGE_FILE_EXTENSIONS = ['PNG', 'JPG', 'JPEG', 'GIF', 'BMP', 'WEBP', 'ICO'];
+
 // 生成常用文本项目HTML字符串
 function generateQuickTextItemHTML(text, index) {
   // 直接使用后端返回的content_type字段
@@ -194,7 +197,7 @@ function generateFileIconHTML(file, size = 'medium') {
 
   // 检查是否是图片文件且启用了预览
   const settings = getCurrentSettings();
-  const isImageFile = ['PNG', 'JPG', 'JPEG', 'GIF', 'BMP', 'WEBP', 'ICO'].includes(file.file_type?.toUpperCase());
+  const isImageFile = IMAGE_FILE_EXTENSIONS.includes(file.file_type?.toUpperCase());
   
   if (isImageFile && settings.showImagePreview && file.path) {
     const iconSrc = convertFileSrc(file.path, 'asset');
@@ -447,7 +450,13 @@ export async function deleteQuickText(id) {
   showConfirmModal('确认删除', '确定要删除这个常用文本吗？', async () => {
     try {
       await invoke('delete_quick_text', { id });
-      await refreshQuickTexts();
+      
+      const newTexts = quickTexts.filter(item => item.id !== id);
+      setQuickTexts(newTexts);
+      window.quickTexts = newTexts;
+      
+      renderQuickTexts();
+      
       showNotification('已删除常用文本', 'success');
     } catch (error) {
       console.error('删除常用文本失败:', error);
@@ -550,7 +559,27 @@ export async function updateQuickTextsOrder(oldIndex, newIndex) {
       toIndex: targetIndexInGroup
     });
 
-    await refreshQuickTexts();
+
+    const originalOldIndex = quickTexts.findIndex(item => item.id === movedItem.id);
+    if (originalOldIndex !== -1) {
+      const newTexts = [...quickTexts];
+      const [removed] = newTexts.splice(originalOldIndex, 1);
+      
+      const targetOriginalIndex = targetItem ? 
+        quickTexts.findIndex(item => item.id === targetItem.id) : 
+        quickTexts.length;
+      
+      if (targetOriginalIndex !== -1) {
+        newTexts.splice(targetOriginalIndex, 0, removed);
+        setQuickTexts(newTexts);
+        window.quickTexts = newTexts;
+        renderQuickTexts();
+      } else {
+        await refreshQuickTexts();
+      }
+    } else {
+      await refreshQuickTexts();
+    }
 
   } catch (error) {
     console.error('更新常用文本顺序失败:', error);
@@ -780,7 +809,12 @@ async function handleQuickTextItemPaste(text, element = null) {
     if (isOneTimePaste) {
       setTimeout(async () => {
         await invoke('delete_quick_text', { id: text.id });
-        await refreshQuickTexts();
+        
+        const newTexts = quickTexts.filter(item => item.id !== text.id);
+        setQuickTexts(newTexts);
+        window.quickTexts = newTexts;
+        
+        renderQuickTexts();
       }, 100);
     }
 
@@ -829,7 +863,23 @@ function showQuickTextContextMenu(event, text) {
     ];
   } else if (contentType === 'file') {
     // 文件类型菜单
-    menuItems = [
+    // 检查是否包含图片文件
+    const hasImageFile = checkIfHasImageFile(text);
+    
+    menuItems = [];
+    
+    // 如果包含图片文件，添加钉到屏幕选项
+    if (hasImageFile) {
+      menuItems.push({
+        icon: 'ti-pin',
+        text: '钉到屏幕',
+        onClick: async () => {
+          await pinImageFileToScreen(text);
+        }
+      });
+    }
+    
+    menuItems.push(
       {
         icon: 'ti-external-link',
         text: '使用默认程序打开',
@@ -859,7 +909,7 @@ function showQuickTextContextMenu(event, text) {
           deleteQuickText(text.id);
         }
       }
-    ];
+    );
   } else {
     // 文本、链接和富文本类型菜单
     menuItems = [
@@ -998,6 +1048,49 @@ async function copyFilePaths(text) {
   } catch (error) {
     console.error('复制文件路径失败:', error);
     showNotification('复制文件路径失败', 'error');
+  }
+}
+
+// 检查文件列表中是否包含图片文件
+function checkIfHasImageFile(text) {
+  try {
+    const filesJson = text.content.substring(6); 
+    const filesData = JSON.parse(filesJson);
+
+    if (filesData.files && filesData.files.length > 0) {
+      return filesData.files.some(file => 
+        IMAGE_FILE_EXTENSIONS.includes(file.file_type?.toUpperCase())
+      );
+    }
+  } catch (error) {
+    console.error('检查图片文件失败:', error);
+  }
+  return false;
+}
+
+// 钉图片文件到屏幕
+async function pinImageFileToScreen(text) {
+  try {
+    const filesJson = text.content.substring(6);
+    const filesData = JSON.parse(filesJson);
+
+    if (filesData.files && filesData.files.length > 0) {
+      const imageFile = filesData.files.find(file => 
+        IMAGE_FILE_EXTENSIONS.includes(file.file_type?.toUpperCase())
+      );
+
+      if (imageFile) {
+        await invoke('pin_image_from_file', { 
+          filePath: imageFile.path 
+        });
+        showNotification('已钉到屏幕', 'success', 2000);
+      } else {
+        showNotification('未找到图片文件', 'error');
+      }
+    }
+  } catch (error) {
+    console.error('钉图到屏幕失败:', error);
+    showNotification('钉图失败: ' + error, 'error');
   }
 }
 

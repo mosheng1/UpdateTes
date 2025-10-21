@@ -19,6 +19,7 @@ mod groups;
 mod image_manager;
 mod key_state_monitor;
 mod mouse_hook;
+mod mouse_utils;
 mod paste_utils;
 mod preview_window;
 mod pin_image_window;
@@ -35,12 +36,14 @@ mod shortcut_interceptor;
 mod sound_manager;
 mod text_input_simulator;
 mod tray;
+mod updater;
 mod utils;
 mod window_effects;
 mod window_management;
 mod edge_snap;
 mod state_manager;
 mod window_drag;
+mod window_animation;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -124,6 +127,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
@@ -535,6 +539,14 @@ pub fn run() {
             commands::create_pin_image_window,
             commands::pin_image_from_file,
             
+            // 更新器相关命令
+            commands::show_updater_window,
+            commands::close_updater_window,
+            commands::updater_get_update_info,
+            
+            // 窗口动画
+            window_animation::animate_window_resize,
+            
             // 截屏窗口相关命令
             crate::screenshot::show_screenshot_window,
             crate::screenshot::hide_screenshot_window,
@@ -543,6 +555,7 @@ pub fn run() {
             crate::screenshot::get_all_monitors,
             crate::screenshot::get_css_monitors,
             crate::screenshot::constrain_selection_bounds,
+            crate::screenshot::set_cursor_position_physical,
             commands::start_builtin_screenshot,
             
             crate::screenshot::init_scrolling_screenshot,
@@ -557,6 +570,7 @@ pub fn run() {
             crate::screenshot::start_auto_selection,
             crate::screenshot::stop_auto_selection,
             crate::screenshot::is_auto_selection_active,
+            crate::screenshot::clear_auto_selection_cache,
             
             // 贴图窗口相关命令
             crate::pin_image_window::get_pin_image_data,

@@ -327,20 +327,16 @@ async function initializeUI() {
     bgSetting.style.display = (settings.theme === 'background') ? '' : 'none';
   }
 
-  // 延迟初始化更新检测
+  // 初始化更新检测
   setTimeout(async () => {
     try {
-      const { setupUpdateChecker } = await import('../../js/updateChecker.js');
-      setupUpdateChecker();
-      
-      let notified = false;
-      window.addEventListener('qc-update-available', (e) => {
-        if (notified) return;
-        notified = true;
-        const rel = e?.detail?.latestRelease;
-        const ver = (rel?.tagName || rel?.name || '').toString();
-        showNotification(`发现新版本 ${ver}，点击"关于 → 检查更新"查看详情`, 'success');
-      }, { once: true });
+      const { updateService } = await import('../../updater/updater-service.js');
+      const { showUpdateBadge } = await import('../../updater/updater-ui.js');
+
+      await updateService.checkOnSettingsOpen((updateInfo) => {
+        showUpdateBadge(updateInfo);
+        showNotification(`发现新版本 v${updateInfo.version}，请前往"关于"页面查看`, 'success');
+      });
     } catch (e) {
       console.warn('初始化更新检测失败:', e);
     }
@@ -832,14 +828,14 @@ async function bindAboutPageEvents() {
         checkUpdatesBtn.style.cursor = 'not-allowed';
         checkUpdatesBtn.textContent = '检查更新（已禁用便携版更新）';
       } else {
-        checkUpdatesBtn.addEventListener('click', async () => {
-          await checkForUpdates();
+        checkUpdatesBtn.addEventListener('click', async (event) => {
+          await checkForUpdates(event);
         });
       }
     } catch (error) {
       console.error('检查便携版模式失败:', error);
-      checkUpdatesBtn.addEventListener('click', async () => {
-        await checkForUpdates();
+      checkUpdatesBtn.addEventListener('click', async (event) => {
+        await checkForUpdates(event);
       });
     }
   }
@@ -995,10 +991,20 @@ async function loadAppVersion() {
   }
 }
 
-async function checkForUpdates() {
+async function checkForUpdates(eventOrButton) {
   try {
-    const { autoUpdater } = await import('../../js/autoUpdater.js');
-    await autoUpdater.checkForUpdates(false);
+    const { updateService } = await import('../../updater/updater-service.js');
+
+    let triggerButton = null;
+    if (eventOrButton) {
+      if (eventOrButton.target) {
+        triggerButton = eventOrButton.target;
+      } else if (eventOrButton.tagName) {
+        triggerButton = eventOrButton;
+      }
+    }
+    
+    await updateService.checkForUpdates(false, triggerButton);
   } catch (error) {
     console.error('检查更新失败:', error);
     showNotification('检查更新失败', 'error');

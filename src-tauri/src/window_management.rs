@@ -5,7 +5,7 @@ use tauri::WebviewWindow;
 
 static MAIN_WINDOW_AUTO_SHOWN: AtomicBool = AtomicBool::new(false);
 
-/// 显示窗口
+// 显示窗口
 pub fn show_webview_window(window: tauri::WebviewWindow) {
     // 检查是否处于边缘吸附隐藏状态
     if crate::edge_snap::is_window_edge_hidden() {
@@ -77,7 +77,7 @@ pub fn show_webview_window(window: tauri::WebviewWindow) {
     }
 }
 
-/// 隐藏窗口
+// 隐藏窗口
 pub fn hide_webview_window(window: tauri::WebviewWindow) {
     // 如果右键菜单正在显示，不隐藏主窗口
     if crate::state_manager::is_context_menu_visible() {
@@ -129,7 +129,7 @@ pub fn hide_webview_window(window: tauri::WebviewWindow) {
     crate::shortcut_interceptor::disable_navigation_keys();
 }
 
-/// 切换窗口显示/隐藏状态
+// 切换窗口显示/隐藏状态
 pub fn toggle_webview_window_visibility(window: tauri::WebviewWindow) {
     // 检查是否处于边缘吸附隐藏状态
     if crate::edge_snap::is_window_edge_hidden() {
@@ -268,20 +268,19 @@ pub fn hide_main_window_if_auto_shown(window: &WebviewWindow) -> Result<(), Stri
 // 智能窗口定位算法：计算最佳窗口位置
 #[cfg(windows)]
 fn calculate_optimal_window_position(window: &WebviewWindow) -> Result<(i32, i32), String> {
-    use windows::Win32::Foundation::{POINT, RECT};
+    use windows::Win32::Foundation::RECT;
     use windows::Win32::Graphics::Gdi::{
         GetMonitorInfoW, MonitorFromPoint, MONITORINFO, MONITOR_DEFAULTTONEAREST,
     };
     use windows::Win32::UI::WindowsAndMessaging::{
-        GetCursorPos, GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN,
+        GetSystemMetrics, SM_CXSCREEN, SM_CYSCREEN,
     };
 
     unsafe {
-        // 直接获取鼠标位置作为定位基准
-        let mut cursor_pos = POINT { x: 0, y: 0 };
-        if GetCursorPos(&mut cursor_pos).is_err() {
-            return Err("获取鼠标位置失败".to_string());
-        }
+        let cursor_pos = match crate::mouse_utils::get_cursor_point() {
+            Ok(pos) => pos,
+            Err(e) => return Err(e),
+        };
 
         // 获取鼠标所在的显示器信息
         let monitor = MonitorFromPoint(cursor_pos, MONITOR_DEFAULTTONEAREST);
