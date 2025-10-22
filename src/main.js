@@ -12,10 +12,6 @@ function printStartupBanner() {
   console.log('██║ ╚═╝ ██║╚██████╔╝███████║██║  ██║███████╗██║ ╚████║╚██████╔╝');
   console.log('╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ');
   console.log('');
-  console.log('QuickClipboard v1.0.0 - 快速剪贴板管理工具');
-  console.log('Author: MoSheng | Frontend: JavaScript + Vite');
-  console.log('Main window initializing...');
-  console.log('');
 }
 
 import { initThemeManager } from './js/themeManager.js';
@@ -237,13 +233,13 @@ async function initApp() {
     { value: 'row-height-medium', text: '中' },
     { value: 'row-height-small', text: '小' }
   ];
-  
+
   // 文件样式选项
   const fileStyleOptions = [
     { value: 'file-style-detailed', text: '详细信息' },
     { value: 'file-style-icons-only', text: '仅图标' }
   ];
-  
+
   if (contentFilterContainer) {
     contentCustomFilter = new CustomSelect(contentFilterContainer, {
       isMenuType: true,
@@ -346,7 +342,7 @@ async function initApp() {
 
   // 初始化工具面板
   initToolsPanel();
-  
+
   // 初始化音频播放器
   initMusicPlayer();
 

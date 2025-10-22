@@ -66,10 +66,6 @@ fn print_startup_banner() {
     println!("██║ ╚═╝ ██║╚██████╔╝███████║██║  ██║███████╗██║ ╚████║╚██████╔╝");
     println!("╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ");
     println!();
-    println!("QuickClipboard v1.0.0 - 快速剪贴板管理工具");
-    println!("Author: MoSheng | Built with Tauri + Rust");
-    println!("Starting application...");
-    println!();
 }
 
 // =================== 内部函数 ===================
